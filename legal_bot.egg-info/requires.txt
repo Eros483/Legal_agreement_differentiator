@@ -1,4 +1,0 @@
-pymupdf
-streamlit
-fastapi
-uvicorn
