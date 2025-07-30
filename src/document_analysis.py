@@ -1,3 +1,5 @@
+#src/document_analysis.py
+
 from src.custom_exception import CustomException
 import fitz
 from difflib import SequenceMatcher
@@ -14,6 +16,9 @@ class DocumentAnalysis:
         self.modified_file_path=modified_file_path
 
     def extract_text(self, pdf_path):
+        """
+        Extract text from pdf at given path
+        """
         doc=fitz.open(pdf_path)
         complete_text=""
         for page in doc:
@@ -23,6 +28,9 @@ class DocumentAnalysis:
         return complete_text
 
     def extract_text_from_documents(self):
+        """
+        Extract text from original and updated pdfs
+        """
         try:
             original_text=self.extract_text(self.original_file_path)
             modified_text=self.extract_text(self.modified_file_path)
@@ -32,6 +40,16 @@ class DocumentAnalysis:
             raise CustomException("Failed to extract data", e)
 
     def extract_text_diffs(self, a: str, b: str):
+        """
+        Extract changes made in the provided documents using difflib
+
+        Args:
+            a: Original document text
+            b: Altered document text
+
+        Returns:
+            Tuple of changes
+        """
         try:
             a_lines = a.splitlines()
             b_lines = b.splitlines()
@@ -57,6 +75,15 @@ class DocumentAnalysis:
             raise CustomException("Failed to extract textual differences")
         
     def format_text_differences(self, diffs: str):
+        """
+        Formats differences to be utilised by LLM
+        
+        Args:
+            diffs: Tuple consisting of differences between documents
+        
+        Returns:
+            string: LLM friendly Natural language string explaining differences
+        """
         try:
             formatted = []
             for change in diffs:
@@ -84,6 +111,15 @@ class DocumentAnalysis:
             raise CustomException("Failed to format text")
         
     def analyze_document_changes(self, diff_text):
+        """
+        Analyzes changes using llama 3.1
+        
+        Args:
+            diff_text: String consisting of changes between documents
+        
+        Output:
+            string: Analysis of differences
+        """
         prompt = f"""
         Act as a legal expert specialising in legal agreements.
         Explain it like to someone who is an affected stakeholder by the legal agreement.
@@ -104,6 +140,14 @@ class DocumentAnalysis:
         return response.json()['response']
     
     def create_html_representation(self, original_text, new_text, output_path):
+        """
+        Creates visual representation of differences in the documents
+
+        Args:
+            original_text: text contained in original agreement
+            new_text: text contained in altered agreement
+            output_path: path to HTML file for observing visual differences
+        """
         try:
             os.makedirs(output_path, exist_ok=True)
 
@@ -428,10 +472,3 @@ class DocumentAnalysis:
         llm_response=self.analyze_document_changes(llm_input)
         self.create_html_representation(a, b, HTML_PATH)
         return llm_response
-    
-
-if __name__=="__main__":
-    document_analyzer=DocumentAnalysis("../assets/original.pdf", "../assets/modified.pdf")
-    analysis=document_analyzer.run()
-    print(analysis)
-
