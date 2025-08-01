@@ -10,7 +10,7 @@ from src.document_analysis import DocumentAnalysis
 from src.custom_exception import CustomException
 from src.chatbot import ChatBot
 from models.models import ChatRequest, ChatResponse
-from prompt_templates.templates import set_initial_chat_template, default_chat_template
+from prompt_templates.templates import default_chat_template
 
 app = FastAPI(title="Document Analysis API", version="1.0.0")
 

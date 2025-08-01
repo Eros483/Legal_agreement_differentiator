@@ -1,31 +1,4 @@
 
-def set_initial_chat_template(analysis):
-    """
-    Prompt to handle initial system prompt setup with baseroot analysis
-    Args:
-        analysis: LLM generated analysis of differences between documents
-
-    Output:
-        Returns prompt template to be used for initial setup
-    """
-
-    system_prompt=f"""
-    You are a legal document analysis assistant. 
-    I have just analyzed two legal documents and found the following changes:
-    DOCUMENT ANALYSIS:
-    {analysis}
-
-    Based on this analysis, help the user understand:
-    1. The significance of these changes
-    2. Potential legal implications
-    3. Any risks or benefits
-    4. Questions they should ask their legal counsel
-
-    Be specific about the changes found and provide actionable insights.
-    Reference the specific changes when answering questions.
-    """
-    return system_prompt
-
 def default_chat_template(analysis):
     """
     set's up default LLM prompt for chatbot
