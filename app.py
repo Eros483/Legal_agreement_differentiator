@@ -4,17 +4,23 @@ import requests
 import json
 from io import BytesIO
 import uuid
+import streamlit.components.v1 as components
+import os
 
 # Configure Streamlit page
 st.set_page_config(
-    page_title="Document Analysis Tool",
+    page_title="Legal Copilot",
     page_icon="📄",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
+logo_path="assets/chugh_logo.jpg"
+self_logo_path="assets/self_logo.png"
+
 # Backend API URL
 API_BASE_URL = "http://localhost:8000"
+LLM_URL="http://localhost:11434"
 
 # Initialize session state
 if 'session_id' not in st.session_state:
@@ -24,10 +30,10 @@ if 'chat_history' not in st.session_state:
 if 'analysis_complete' not in st.session_state:
     st.session_state.analysis_complete = False
 
-def check_api_health():
+def check_api_health(url, path):
     """Check if the backend API is running"""
     try:
-        response = requests.get(f"{API_BASE_URL}/health")
+        response = requests.get(f"{url}{path}")
         return response.status_code == 200
     except requests.exceptions.RequestException:
         return False
@@ -80,21 +86,27 @@ def clear_chat_session():
         return False
 
 def main():
-    st.title("📄 Legal Document Analysis Tool")
+    st.title("Chugh Legal AI Assistant")
+    st.logo(image=self_logo_path, icon_image=self_logo_path)
     st.markdown("Compare two PDF documents and chat with AI about the changes")
     
     # Sidebar
     with st.sidebar:
+        st.image(image=logo_path, use_container_width=True)
         st.header("🔧 Configuration")
         
-        # API Health Check
-        if check_api_health():
+            # API Health Check
+        if check_api_health(API_BASE_URL, "/health"):
             st.success("✅ Backend API is running")
         else:
             st.error("❌ Backend API is not available")
-            st.warning("Please make sure the FastAPI backend is running on http://localhost:8000")
-            return
-        
+
+        # Ollama health
+        if check_api_health(LLM_URL, "/api/tags"):
+            st.success("✅ API Ollama is running")
+        else:
+            st.error("❌ API Ollama is not available")
+
         st.markdown("---")
         
         # Session info
@@ -233,7 +245,18 @@ def main():
                         del st.session_state.analysis_result
                     st.rerun()
         
-        # Section 3: Chat Interface
+        # Section 3: html representation
+        st.markdown("---")
+        st.subheader("🧾 Visual Document Differences")
+        html_diff_path = "html_files/differences.html"
+        if os.path.exists(html_diff_path):
+            with open(html_diff_path, "r", encoding="utf-8") as f:
+                html_content = f.read()
+            components.html(html_content, height=1000, scrolling=True)
+        else:
+            st.warning("⚠️ No visual diff file found yet. Run an analysis first to generate it.")
+
+        # Section 4: Chat Interface
         st.markdown("---")
         st.subheader("💬 Chat About Document Changes")
         
